@@ -1,8 +1,8 @@
-# Toy Language Compiler
+# Custom Language Compiler
 This project is a pre-course exploration of compiler design, created to benchmark my current understanding of compilers against the skills I'll aquire by the end of my upcoming compiler design course. By building this project now, I aim to identify areas for growth and demonstrate progress over the semester.
 
 ## Overview
-The **Toy Language Compiler** is a simple compiler that translates a custom toy programming language into C++ code. It performs lexical and syntax analysis on the input and generates equivalent C++ source code, which can be compiled and executed using standard tools like GCC or Clang.
+The **Custom Language Compiler** is a simple compiler that translates a custom programming language into C++ code. It performs lexical and syntax analysis on the input and generates equivalent C++ source code, which can be compiled and executed using standard tools like GCC or Clang.
 
 ### Features
 - Tokenizes a custom toy language
@@ -17,8 +17,8 @@ The main objective of this project is to serve as a **baseline** for evaluating 
 This comparison wil highlight how much I've learned throughout the semester.
 
 ## Example
-### Input (Toy Language):
-```toy
+### Input (Custom Language):
+```
 x <- 5;
 y <- 10;
 z <- x + y;
@@ -48,15 +48,15 @@ g++ output.cpp -o output
 
 ## File Structure  
 ```plaintext
-📂 toy-compiler  
+📂 my-first-compiler  
 ├── 📂 src  
 │   ├── lexer.cpp         # Tokenizer implementation  
 │   ├── parser.cpp        # Syntax parser  
 │   ├── codegen.cpp       # C++ code generation  
 │   └── main.cpp          # Entry point of the compiler  
 ├── 📂 examples  
-│   ├── example1.toy      # Sample toy language file  
-│   └── example2.toy  
+│   ├── example1.cool      # Sample toy language file  
+│   └── example2.cool  
 ├── README.md             # Project overview  
 └── Makefile              # Build automation  
 ```
