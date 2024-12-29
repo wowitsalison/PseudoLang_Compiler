@@ -20,7 +20,7 @@ The PseudoLang Language syntax is defined below:
   declare VAR [<- VALUE];
   ```
 - **Examples**:
-  ```
+  ```pseudo
   declare x <- 5;  // Variable initialized to 5
   declare y;       // Uninitialized variable
   ```
@@ -32,7 +32,7 @@ The PseudoLang Language syntax is defined below:
   VAR <- VALUE;
   ```
 - **Examples**:
-  ```
+  ```pseudo
   x <- 10;
   z <- x + y;
   ```
@@ -41,7 +41,7 @@ The PseudoLang Language syntax is defined below:
 
 - **Supported Operators**: `+`, `-`, `*`, `/`
 - **Examples**:
-  ```
+  ```pseudo
   z <- x + y;
   n <- z / 2;
   ```
@@ -49,7 +49,7 @@ The PseudoLang Language syntax is defined below:
 ### 4. **Comments**
 
 - **Single-line**: Use `//` to add comments.
-  ```PseudoLang
+  ```pseudo
   // This is a single-line comment
   declare x <- 5; // Inline comment
   ```
@@ -57,13 +57,13 @@ The PseudoLang Language syntax is defined below:
 ### 5. **Loops**
 
 - **Syntax**:
-  ```PseudoLang
+  ```pseudo
   while (CONDITION) loop
       STATEMENTS;
   end loop;
   ```
 - **Examples**:
-  ```PseudoLang
+  ```pseudo
   while (i < 10) loop
       put(i);
       i <- i + 1;
@@ -73,7 +73,7 @@ The PseudoLang Language syntax is defined below:
 ### 6. **Conditionals**
 
 - **Syntax**:
-  ```PseudoLang
+  ```pseudo
   if (CONDITION) then
       STATEMENTS;
   [elseif (CONDITION) then
@@ -83,7 +83,7 @@ The PseudoLang Language syntax is defined below:
   end if;
   ```
 - **Examples**:
-  ```PseudoLang
+  ```pseudo
   if (x = 5) then
       put("x is 5");
   elseif (x = 4) then
@@ -96,7 +96,7 @@ The PseudoLang Language syntax is defined below:
 ### 7. **Input/Output**
 
 - **Output**: Use `put` to display values or strings.
-  ```PseudoLang
+  ```pseudo
   put(x);
   put("Hello, World!");
   ```
@@ -110,7 +110,7 @@ The PseudoLang Language syntax is defined below:
 
 PseudoLang Language variables are dynamically typed, and the type is inferred from the assigned value. For example:
 
-```PseudoLang
+```pseudo
 declare x <- 5;       // Integer
 declare y <- "text"; // String
 ```
@@ -127,7 +127,7 @@ declare y <- "text"; // String
 
 ### Simple Program
 
-```PseudoLang
+```pseudo
 // Declare and assign variables
 declare x <- 5;
 declare y <- 10;
@@ -149,6 +149,22 @@ while (x < 10) loop
     put(x);
     x <- x + 1;
 end loop;
+```
+### Procedure Example
+```pseudo
+// Declare and assign variables
+declare m <- 5;
+declare n;
+declare x;
+declare y;
+
+procedure main(m, n, x, y)
+begin
+    n <- m + 2;
+    x <- n * 5;
+    y <- x - m;
+    put("result of y: "); put(y); 
+end;
 ```
 
 ## Future Considerations
