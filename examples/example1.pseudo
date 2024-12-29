@@ -1,0 +1,23 @@
+declare x <- 5;
+declare y <- 7;
+declare z;
+
+// Test arithmetic
+z <- x + y;
+put(z);
+
+// Test conditionals
+if (x = 5) then
+    put("x is 5");
+elseif (x = 4) then
+    put("x is 4")
+else
+    put("x is something else")
+end if;
+
+// Test loops
+declare i <- 0;
+while (i < 10) loop
+    put(i);
+    i <- i + 1;
+end loop
