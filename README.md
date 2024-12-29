@@ -19,9 +19,9 @@ This comparison wil highlight how much I've learned throughout the semester.
 ## Example
 ### Input (Toy Language):
 ```toy
-let x = 5;
-let y = 10;
-let z = x + y;
+x <- 5;
+y <- 10;
+z <- x + y;
 ```
 
 ### Output (Generated C++):
