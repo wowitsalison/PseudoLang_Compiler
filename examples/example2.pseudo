@@ -1,0 +1,12 @@
+declare n;
+declare m;
+declare x;
+declare y;
+
+procedure main(m, n, x, y)
+begin
+    n <- m + 2;
+    x <- n * 5;
+    y <- x - m;
+    put("result of y: "); put(y); 
+end;
