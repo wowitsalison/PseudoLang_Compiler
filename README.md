@@ -1,11 +1,11 @@
-# Custom Language Compiler
+# PseudoLang Language Compiler
 This project is a pre-course exploration of compiler design, created to benchmark my current understanding of compilers against the skills I'll aquire by the end of my upcoming compiler design course. By building this project now, I aim to identify areas for growth and demonstrate progress over the semester.
 
 ## Overview
-The **Custom Language Compiler** is a simple compiler that translates a custom programming language into C++ code. It performs lexical and syntax analysis on the input and generates equivalent C++ source code, which can be compiled and executed using standard tools like GCC or Clang.
+The **PseudoLang Language Compiler** is a simple compiler that translates a custom programming language, PseudoLang,  into C++ code. It performs lexical and syntax analysis on the input and generates equivalent C++ source code, which can be compiled and executed using standard tools like GCC or Clang.
 
 ### Features
-- Tokenizes a custom language
+- Tokenizes PseudoLang
 - Parses basic programming constructs (e.g., variable declarations and arithmetic operations).
 - Ouputs valid C++ source code
 
@@ -17,7 +17,7 @@ The main objective of this project is to serve as a **baseline** for evaluating 
 This comparison wil highlight how much I've learned throughout the semester.
 
 ## Example
-### Input (Custom Language):
+### Input (PseudoLang):
 ```
 x <- 5;
 y <- 10;
@@ -55,7 +55,7 @@ g++ output.cpp -o output
 │   ├── codegen.cpp       # C++ code generation  
 │   └── main.cpp          # Entry point of the compiler  
 ├── 📂 examples  
-│   ├── example1.cool      # Sample custom language file  
+│   ├── example1.cool      # Sample PseudoLang file  
 │   └── example2.cool  
 ├── README.md             # Project overview  
 └── Makefile              # Build automation  
@@ -76,7 +76,7 @@ cd my-first-compiler
 ```
 make
 ```
-3. Compile a sample customF language file:
+3. Compile a sample PseudoLang file:
 ```
 ./my-first-compiler examples/example1.cool -o output.cpp
 g++ output.cpp -o output
