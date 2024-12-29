@@ -5,7 +5,7 @@ This project is a pre-course exploration of compiler design, created to benchmar
 The **Custom Language Compiler** is a simple compiler that translates a custom programming language into C++ code. It performs lexical and syntax analysis on the input and generates equivalent C++ source code, which can be compiled and executed using standard tools like GCC or Clang.
 
 ### Features
-- Tokenizes a custom toy language
+- Tokenizes a custom language
 - Parses basic programming constructs (e.g., variable declarations and arithmetic operations).
 - Ouputs valid C++ source code
 
@@ -55,7 +55,7 @@ g++ output.cpp -o output
 │   ├── codegen.cpp       # C++ code generation  
 │   └── main.cpp          # Entry point of the compiler  
 ├── 📂 examples  
-│   ├── example1.cool      # Sample toy language file  
+│   ├── example1.cool      # Sample custom language file  
 │   └── example2.cool  
 ├── README.md             # Project overview  
 └── Makefile              # Build automation  
@@ -76,9 +76,9 @@ cd my-first-compiler
 ```
 make
 ```
-3. Compile a sample toy language file:
+3. Compile a sample customF language file:
 ```
-./my-first-compiler examples/example1.toy -o output.cpp
+./my-first-compiler examples/example1.cool -o output.cpp
 g++ output.cpp -o output
 ./output
 ```
