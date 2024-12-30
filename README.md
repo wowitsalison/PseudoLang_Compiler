@@ -1,4 +1,5 @@
 # PseudoLang Compiler
+### NOT COMPLETE - IN PROGRESS
 This project is a pre-course exploration of compiler design, created to benchmark my current understanding of compilers against the skills I'll aquire by the end of my upcoming compiler design course. By building this project now, I aim to identify areas for growth and demonstrate progress over the semester.
 
 ## Overview
