@@ -56,10 +56,12 @@ g++ output.cpp -o output
 │   ├── codegen.cpp       # C++ code generation  
 │   └── main.cpp          # Entry point of the compiler  
 ├── 📂 examples  
-│   ├── example1.cool      # Sample PseudoLang file  
-│   └── example2.cool  
-├── README.md             # Project overview  
-└── Makefile              # Build automation  
+│   ├── example1.pseudo   # Sample PseudoLang file  
+│   └── example2.pseudo
+├── 📂 docs
+│   ├── syntax.md         # Syntax for PseudoLang language
+│   └── AST.md            # Abstract Syntax Tree
+├── README.md             # Project overview    
 ```
 
 ## Getting started
