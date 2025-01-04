@@ -1,12 +1,25 @@
-declare n;
-declare m;
 declare x;
 declare y;
+declare z;
+declare counter;
+declare sum;
 
-procedure main(m, n, x, y)
+x <- 3;
+y <- 7;
+z <- 1;
+counter <- 0;
+sum <- 0;
+
+while counter < 5
 begin
-    n <- m + 2;
-    x <- n * 5;
-    y <- x - m;
-    put("result of y: "); put(y); 
+    sum <- sum + x;
+    counter <- counter + 1;
+
+    if counter == 3
+    begin
+        x <- y;
+    end;
 end;
+
+put("Final sum: "); put(sum);
+put("Final value of x: "); put(x);
