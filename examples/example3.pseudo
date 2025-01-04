@@ -1,0 +1,17 @@
+declare x;
+declare y;
+declare n;
+declare m;
+declare z;
+
+procedure math(m, n, x, y)
+begin
+    m <- n - z;
+    n <- x + y;
+    x <- x + y;
+    y <- x + y;
+    z <- m + n + x + y;
+    return z;
+end math;
+
+z <- math(m, n, x, y);
