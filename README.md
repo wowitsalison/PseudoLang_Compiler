@@ -62,6 +62,8 @@ g++ output.cpp -o output
 │   ├── token_scanner.h     # Token scanner header
 │   ├── keyword_manager.cpp # Keyword manager implementation
 │   ├── keyword_manager.h   # Keyword manager header
+│   ├── symbol_table.cpp    # Symbol table
+│   ├── symbol_table.h      # Symbol table header
 │   └── main.cpp            # Entry point of the compiler
 ├── 📂 examples  
 │   ├── example1.pseudo     # Sample PseudoLang file
