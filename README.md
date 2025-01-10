@@ -51,17 +51,26 @@ g++ output.cpp -o output
 ```plaintext
 📂 my-first-compiler  
 ├── 📂 src  
-│   ├── lexer.cpp         # Tokenizer implementation  
-│   ├── parser.cpp        # Syntax parser  
-│   ├── codegen.cpp       # C++ code generation  
-│   └── main.cpp          # Entry point of the compiler  
+│   ├── lexer.cpp           # Tokenizer implementation
+│   ├── lexer.h             # Tokenizer header
+│   ├── parser.cpp          # Syntax parser
+│   ├── parser.h            # Syntax parser header
+│   ├── codegen.cpp         # C++ code generation
+│   ├── codegen.h           # C++ code generation header
+│   ├── token.h             # Token definitions
+│   ├── token_scanner.cpp   # Token scanner implementation
+│   ├── token_scanner.h     # Token scanner header
+│   ├── keyword_manager.cpp # Keyword manager implementation
+│   ├── keyword_manager.h   # Keyword manager header
+│   └── main.cpp            # Entry point of the compiler
 ├── 📂 examples  
-│   ├── example1.pseudo   # Sample PseudoLang file  
-│   └── example2.pseudo
+│   ├── example1.pseudo     # Sample PseudoLang file
+│   ├── example2.pseudo
+│   └── example3.pseudo
 ├── 📂 docs
-│   ├── syntax.md         # Syntax for PseudoLang language
-│   └── AST.md            # Abstract Syntax Tree
-├── README.md             # Project overview    
+│   ├── syntax.md           # Syntax for PseudoLang language
+│   └── AST.md              # Abstract Syntax Tree
+├── README.md               # Project overview    
 ```
 
 ## Getting started
@@ -81,7 +90,7 @@ make
 ```
 3. Compile a sample PseudoLang file:
 ```
-./my-first-compiler examples/example1.cool -o output.cpp
+./my-first-compiler examples/example1.pseudo -o output.cpp
 g++ output.cpp -o output
 ./output
 ```
