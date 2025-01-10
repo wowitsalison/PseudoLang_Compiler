@@ -1,72 +1,30 @@
-#ifndef LEXER_H
-#define LEXER_H
-
+#pragma once
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <memory>
+#include "token.h"
+#include "token_scanner.h"
+#include "keyword_manager.h"
 
-enum class TokenType {
-    IDENTIFIER,         // variable names, function names
-    NUMBER,             // integer numbers
-    STRING,             // string literals
-    END_OF_FILE,        // end of file
-    IF,                 // if keyword
-    ELSE,               // else keyword
-    WHILE,              // while keyword
-    DECLARE,            // var declaration
-    PLUS,               // +
-    MINUS,              // -
-    STAR,               // *
-    SLASH,              // /
-    EQUAL,              // =
-    NOT_EQUAL,          // !=
-    LESS,               // <
-    GREATER,            // >
-    LESS_EQUAL,         // <=
-    GREATER_EQUAL,      // >=
-    ASSIGN,             // <-
-    OPEN_PAREN,         // (
-    CLOSE_PAREN,        // )
-    OPEN_BRACE,         // {
-    CLOSE_BRACE,        // }
-    COMMA,              // ,
-    SEMICOLON,          // ;
-    COMMENT,            // // comment
-    UNKNOWN             // unrecognized tokens
-};
-
-struct Token {
-    TokenType type;     // type of token
-    std::string value;  // value of token
-    int line;           // line number
-    int column;         // column number
-
-    Token(TokenType type, const std::string& value, int line, int column) 
-        : type(type), value(value), line(line), column(column) {}
-};
 
 class Lexer {
 public:
     Lexer(const std::string& sourceCode);
     std::vector<Token> tokenize();
+
 private:
     std::string sourceCode;
-    int currentPosition;
+    size_t currentPosition;
     int line;
     int column;
+    std::unique_ptr<TokenScanner> scanner;
+    std::unique_ptr<KeywordManager> keywordManager;
 
-    // Create a hashmap to store keywords
-    std::unordered_map<std::string, TokenType> keywordMap; // Keyword map
-    void initializeKeywordMap();                           // Initialize keyword map
-
-    char peek() const;                                     // Peek at the current character
-    char advance();                                        // Advance to the next character
-    bool isAtEnd() const;                                  // Check if at the end of the source code
-    void skipWhitespace();                                 // Skip whitespace
-    Token scanToken();                                     // Process the next token
-    Token handleIdentifierOrKeyword(char firstChar);       // Handle identifiers and keywords
-    Token handleNumber(char firstChar);                    // Handle numeric literals
-    Token handleString();                                  // Handle string literals
+    void skipWhitespace();
+    void skipComment();
+    void skipMultilineComment();
+    char peek() const;
+    char peekNext() const;
+    char advance();
+    bool isAtEnd() const;
 };
-
-#endif // LEXER_H
