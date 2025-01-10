@@ -1,32 +1,100 @@
 #include "lexer.h"
+#include "token_scanner.h"
+#include "keyword_manager.h"
 #include <cctype>
-#include <unordered_map>
 
-// Constructor with keyword map initialization
+// Constructor
 Lexer::Lexer(const std::string& sourceCode) 
     : sourceCode(sourceCode), currentPosition(0), line(1), column(1) {
-    initializeKeywordMap(); // Populate the keyword map
-}
-
-// Initialize keyword map
-void Lexer::initializeKeywordMap() {
-    keywordMap = {
-        {"if", TokenType::IF},
-        {"else", TokenType::ELSE},
-        {"while", TokenType::WHILE},
-        {"declare", TokenType::DECLARE}
-    };
+        scanner = std::make_unique<TokenScanner>(sourceCode, currentPosition, line, column);
+        keywordManager = std::make_unique<KeywordManager>();
 }
 
 // Tokenize the PseudoLang source code
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
+
     while (!isAtEnd()) {
         skipWhitespace();
-        tokens.push_back(scanToken());
+        if (peek() == '/') {
+            if (peekNext() == '/') {
+                skipComment();
+                continue;
+            } else if (peekNext() == '*') {
+                skipMultilineComment();
+                continue;
+            }
+        }
+        Token token = scanner->scanToken();
+
+        // Handle potential multi-word keywords
+        if (token.type == TokenType::IDENTIFIER) {
+            if (keywordManager->isMultiWordKeyword(token.lexeme)) {
+                size_t savedPos = currentPosition;
+                int savedLine = line;
+                int savedCol = column;
+
+                skipWhitespace();
+                if (!isAtEnd() && isalpha(peek())) {
+                    std::string secondWord;
+                    while (!isAtEnd() && (isalnum(peek()) || peek() == '_')) {
+                        secondWord += advance();
+                    }
+
+                    std::string combined = token.lexeme + " " + secondWord;
+                    TokenType multiWordType = keywordManager->getMultiWordKeywordType(combined);
+
+                    if (multiWordType != TokenType::UNKNOWN) {
+                        token = Token(multiWordType, combined, token.line, token.column);
+                    } else {
+                        currentPosition = savedPos;
+                        line = savedLine;
+                        column = savedCol;
+                    }
+                }
+            }
+
+            // Check for single-word keywords
+            if (token.type == TokenType::IDENTIFIER) {
+                TokenType keywordType = keywordManager->getKeywordType(token.lexeme);
+                if (keywordType != TokenType::UNKNOWN) {
+                    token = Token(keywordType, token.lexeme, token.line, token.column);
+                }
+            }
+        }
+
+        tokens.push_back(token);
     }
+
     tokens.push_back(Token(TokenType::END_OF_FILE, "", line, column));
     return tokens;
+}
+
+// Skip whitespace characters
+void Lexer::skipWhitespace() {
+    while (!isAtEnd() && isspace(peek())) {
+        advance();
+    }
+}
+
+// Skip single-line comments
+void Lexer::skipComment() {
+    while (peek() != '\n' && !isAtEnd()) {
+        advance();
+    }
+}
+
+// Skip multi-line comments
+void Lexer::skipMultilineComment() {
+    advance(); // Consume '*'
+    while (!isAtEnd()) {
+        if (peek() == '*' && peekNext() == '/') {
+            advance(); // Consume '*'
+            advance(); // Consume '/'
+            break;
+        }
+        advance();
+    }
 }
 
 // Peek at the current character
@@ -35,7 +103,13 @@ char Lexer::peek() const {
     return sourceCode[currentPosition];
 }
 
-// Go to next character
+// Peek at the next character
+char Lexer::peekNext() const {
+    if (currentPosition + 1 >= sourceCode.size()) return '\0';
+    return sourceCode[currentPosition + 1];
+}
+
+// Advance to the next character
 char Lexer::advance() {
     if (isAtEnd()) return '\0';
     char c = sourceCode[currentPosition++];
@@ -48,110 +122,7 @@ char Lexer::advance() {
     return c;
 }
 
-// Check for end of file
+// Check if at the end of the source code
 bool Lexer::isAtEnd() const {
     return currentPosition >= sourceCode.size();
-}
-
-// Ignore white space
-void Lexer::skipWhitespace() {
-    while (!isAtEnd() && isspace(peek())) {
-        advance();
-    }
-}
-
-// Scan the next token
-Token Lexer::scanToken() {
-    char c = advance(); // grabs the next character
-    switch (c) {
-        case '+': return Token(TokenType::PLUS, "+", line, column);
-        case '-': return Token(TokenType::MINUS, "-", line, column);
-        case '*': return Token(TokenType::STAR, "*", line, column);
-        case '/':
-            if (peek() == '/') {
-                while (peek() != '\n' && !isAtEnd()) {
-                    advance();
-                }
-                return Token(TokenType::COMMENT, "", line, column);
-            } else {
-                return Token(TokenType::SLASH, "/", line, column);
-            }
-        case '=': return Token(TokenType::EQUAL, "=", line, column);
-        case '!':
-            if (peek() == '=') {
-                advance();
-                return Token(TokenType::NOT_EQUAL, "!=", line, column);
-            }
-            return Token(TokenType::UNKNOWN, "!", line, column);
-        case '<':
-            if (peek() == '-') {
-                advance();
-                return Token(TokenType::ASSIGN, "<-", line, column);
-            }
-            if (peek() == '=') {
-                advance();
-                return Token(TokenType::LESS_EQUAL, "<=", line, column);
-            }
-            return Token(TokenType::LESS, "<", line, column);
-        case '>':
-            if (peek() == '=') {
-                advance();
-                return Token(TokenType::GREATER_EQUAL, ">=", line, column);
-            }
-            return Token(TokenType::GREATER, ">", line, column);
-        case '(': return Token(TokenType::OPEN_PAREN, "(", line, column);
-        case ')': return Token(TokenType::CLOSE_PAREN, ")", line, column);
-        case '{': return Token(TokenType::OPEN_BRACE, "{", line, column);
-        case '}': return Token(TokenType::CLOSE_BRACE, "}", line, column);
-        case ',': return Token(TokenType::COMMA, ",", line, column);
-        case ';': return Token(TokenType::SEMICOLON, ";", line, column);
-        default:
-            if (isalpha(c)) {
-                return handleIdentifierOrKeyword(c);
-            } else if (isdigit(c)) {
-                return handleNumber(c);
-            } else if (c == '"') {
-                return handleString();
-            } else {
-                return Token(TokenType::UNKNOWN, std::string(1, c), line, column);
-            }
-    }
-    return Token(TokenType::UNKNOWN, "", line, column);
-}
-
-// Handle identifiers and keywords
-Token Lexer::handleIdentifierOrKeyword(char firstChar) {
-    std::string lexeme(1, firstChar);
-    while (isalnum(peek())) {
-        lexeme += advance();
-    }
-
-    // Check if the lexeme is a keyword
-    auto it = keywordMap.find(lexeme);
-    if (it != keywordMap.end()) {
-        return Token(it->second, lexeme, line, column);
-    }
-    return Token(TokenType::IDENTIFIER, lexeme, line, column);
-}
-
-// Handle numeric literals
-Token Lexer::handleNumber(char firstChar) {
-    std::string number(1, firstChar);
-    while (isdigit(peek())) {
-        number += advance();
-    }
-    return Token(TokenType::NUMBER, number, line, column);
-}
-
-// Handle string literals
-Token Lexer::handleString() {
-    std::string str;
-    while (peek() != '"' && !isAtEnd()) {
-        str += advance();
-    }
-    if (isAtEnd()) {
-        return Token(TokenType::UNKNOWN, str, line, column);
-    }
-    advance(); // Consume closing "
-    return Token(TokenType::STRING, str, line, column);
 }
