@@ -29,9 +29,24 @@ std::shared_ptr<ASTNode> Parser::parseProgram() {
         if (match(TokenType::DECLARE)) {
             auto node = parseDeclaration();
             if (node) programNode->children.push_back(node);
-        } else if (match(TokenType::IDENTIFIER)) {
-            auto node = parseAssignment();
+        } else if (match(TokenType::PROCEDURE)) {  // Add this case
+            auto node = parseProcedure();
             if (node) programNode->children.push_back(node);
+        } else if (match(TokenType::IDENTIFIER)) {
+            Token identToken = previous();
+            if (peek().type == TokenType::OPEN_PAREN) {
+                currentPosition--; // Back up so parseProcedureCall sees the identifier
+                auto node = parseProcedureCall();
+                if (node) programNode->children.push_back(node);
+            } else if (peek().type == TokenType::ASSIGN) {
+                // This is an assignment
+                currentPosition--; // Back up so parseAssignment sees the identifier
+                auto node = parseAssignment();
+                if (node) programNode->children.push_back(node);
+            } else {
+                std::cerr << "Expected '<-' or '(' after identifier at line " 
+                        << identToken.line << ", column " << identToken.column << std::endl;
+            }
         } else if (match(TokenType::IF)) {
             auto node = parseIfStatement();
             if (node) programNode->children.push_back(node);
@@ -87,7 +102,7 @@ std::shared_ptr<ASTNode> Parser::parseDeclaration() {
 // Parses assignments
 std::shared_ptr<ASTNode> Parser::parseAssignment() {
     // Store identifier token
-    auto identifierToken = previous();
+    auto identifierToken = advance();
 
     // Check to make sure assignment operator is next
     if (!match(TokenType::ASSIGN)) {
@@ -99,6 +114,9 @@ std::shared_ptr<ASTNode> Parser::parseAssignment() {
 
     // Parse the variable's assigned value
     auto valueNode = parseExpression();
+    if (!valueNode) {
+        return nullptr;
+    }
 
     // Check for semicolon
     if (!match(TokenType::SEMICOLON)) {
@@ -109,6 +127,7 @@ std::shared_ptr<ASTNode> Parser::parseAssignment() {
 
     // Create the assignment AST node
     auto assignmentNode = std::make_shared<ASTNode>(ASTNodeType::ASSIGNMENT, identifierToken);
+    assignmentNode->children.push_back(std::make_shared<ASTNode>(ASTNodeType::IDENTIFIER, identifierToken));
     assignmentNode->children.push_back(valueNode);
 
     return assignmentNode;
@@ -123,6 +142,11 @@ std::shared_ptr<ASTNode> Parser::parseExpression() {
             return nullptr;
         }
         return expr;
+    }
+    
+    // Check for procedure call first
+    if (check(TokenType::IDENTIFIER) && tokens[currentPosition + 1].type == TokenType::OPEN_PAREN) {
+        return parseProcedureCall();
     }
     
     auto left = parsePrimary();
@@ -287,7 +311,8 @@ std::shared_ptr<ASTNode> Parser::parseBlock() {
     auto blockNode = std::make_shared<ASTNode>(ASTNodeType::BLOCK, Token(TokenType::UNKNOWN, "", 0, 0));
 
     while (!isAtEnd() && !check(TokenType::END_IF) && !check(TokenType::END_LOOP) && 
-           !check(TokenType::ELSE) && !check(TokenType::ELSEIF)) {
+           !check(TokenType::ELSE) && !check(TokenType::ELSEIF) && 
+           !check(TokenType::END_PROCEDURE)) {  
         
         // Skip whitespace
         while (!isAtEnd() && isWhitespace(peek())) {
@@ -295,23 +320,32 @@ std::shared_ptr<ASTNode> Parser::parseBlock() {
         }
         
         if (isAtEnd() || check(TokenType::END_IF) || check(TokenType::END_LOOP) || 
-            check(TokenType::ELSE) || check(TokenType::ELSEIF)) break;
+            check(TokenType::ELSE) || check(TokenType::ELSEIF) || 
+            check(TokenType::END_PROCEDURE)) break;  
         
-        // Only warn about truly extra semicolons
-        if (match(TokenType::SEMICOLON)) {
-            if (blockNode->children.empty()) {
-                std::cerr << "Warning: Extra semicolon at line " << previous().line 
-                          << ", column " << previous().column << std::endl;
-            }
-            continue;
-        }
-        
-        if (match(TokenType::DECLARE)) {
+        if (match(TokenType::RETURN)) { 
+            auto returnNode = parseReturnStatement();
+            if (returnNode) blockNode->children.push_back(returnNode);
+        } else if (match(TokenType::DECLARE)) {
             auto declNode = parseDeclaration();
             if (declNode) blockNode->children.push_back(declNode);
         } else if (match(TokenType::IDENTIFIER)) {
-            auto assignNode = parseAssignment();
-            if (assignNode) blockNode->children.push_back(assignNode);
+            Token identToken = previous();
+            if (peek().type == TokenType::OPEN_PAREN) {
+                currentPosition--; // Back up so parseProcedureCall sees the identifier
+                auto node = parseProcedureCallStatement();
+                if (node) blockNode->children.push_back(node);
+                else advance();
+            } else if (peek().type == TokenType::ASSIGN) {
+                currentPosition--; // Back up so parseAssignment sees the identifier
+                auto node = parseAssignment();
+                if (node) blockNode->children.push_back(node);
+                else advance();
+            } else {
+                std::cerr << "Expected '<-' or '(' after identifier at line " 
+                        << identToken.line << ", column " << identToken.column << std::endl;
+                advance();
+            }
         } else if (match(TokenType::IF)) {
             auto ifNode = parseIfStatement();
             if (ifNode) blockNode->children.push_back(ifNode);
@@ -332,6 +366,158 @@ std::shared_ptr<ASTNode> Parser::parseBlock() {
     }
 
     return blockNode;
+}
+
+std::shared_ptr<ASTNode> Parser::parseProcedure() {
+    auto procToken = previous();
+    
+    // Parse procedure name
+    if (!match(TokenType::IDENTIFIER)) {
+        std::cerr << "Expected procedure name at line " << peek().line 
+                  << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    auto nameNode = std::make_shared<ASTNode>(ASTNodeType::IDENTIFIER, previous());
+    
+    // Parse parameters
+    std::vector<std::shared_ptr<ASTNode>> params;
+    if (!match(TokenType::OPEN_PAREN)) {
+        std::cerr << "Expected '(' after procedure name at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    // Parse parameter list
+    while (!check(TokenType::CLOSE_PAREN)) {
+        if (!match(TokenType::IDENTIFIER)) {
+            std::cerr << "Expected parameter name at line " << peek().line 
+                      << ", column " << peek().column << std::endl;
+            return nullptr;
+        }
+        params.push_back(std::make_shared<ASTNode>(ASTNodeType::PARAMETER, previous()));
+        
+        if (!check(TokenType::CLOSE_PAREN)) {
+            if (!match(TokenType::COMMA)) {
+                std::cerr << "Expected ',' between parameters at line " 
+                          << peek().line << ", column " << peek().column << std::endl;
+                return nullptr;
+            }
+        }
+    }
+    
+    if (!match(TokenType::CLOSE_PAREN)) {
+        std::cerr << "Expected ')' after parameters at line " << peek().line 
+                  << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    // Parse procedure body
+    if (!match(TokenType::BEGIN)) {
+        std::cerr << "Expected 'begin' after procedure header at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    auto bodyNode = parseBlock();
+    
+    if (!match(TokenType::END_PROCEDURE)) {
+        std::cerr << "Expected 'end procedure' at line " << peek().line 
+                  << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    if (!match(TokenType::SEMICOLON)) {
+        std::cerr << "Expected ';' after 'end procedure' at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    auto procNode = std::make_shared<ASTNode>(ASTNodeType::PROCEDURE, procToken);
+    procNode->children.push_back(nameNode);
+    for (auto& param : params) {
+        procNode->children.push_back(param);
+    }
+    procNode->children.push_back(bodyNode);
+    
+    return procNode;
+}
+
+//
+std::shared_ptr<ASTNode> Parser::parseProcedureCall() {
+    if (!match(TokenType::IDENTIFIER)) {
+        std::cerr << "Expected procedure name at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    auto procName = previous();
+    auto callNode = std::make_shared<ASTNode>(ASTNodeType::PROCEDURE_CALL, procName);
+    
+    if (!match(TokenType::OPEN_PAREN)) {
+        std::cerr << "Expected '(' after procedure name at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    // Parse arguments
+    while (!check(TokenType::CLOSE_PAREN)) {
+        auto arg = parseExpression();
+        if (!arg) {
+            return nullptr;
+        }
+        callNode->children.push_back(arg);
+        
+        if (!check(TokenType::CLOSE_PAREN)) {
+            if (!match(TokenType::COMMA)) {
+                std::cerr << "Expected ',' between arguments at line " 
+                          << peek().line << ", column " << peek().column << std::endl;
+                return nullptr;
+            }
+        }
+    }
+    
+    if (!match(TokenType::CLOSE_PAREN)) {
+        std::cerr << "Expected ')' after arguments at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    return callNode;
+}
+
+std::shared_ptr<ASTNode> Parser::parseProcedureCallStatement() {
+    auto callNode = parseProcedureCall();
+    if (!callNode) {
+        return nullptr;
+    }
+    
+    if (!match(TokenType::SEMICOLON)) {
+        std::cerr << "Expected ';' after procedure call at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    return callNode;
+}
+
+//
+std::shared_ptr<ASTNode> Parser::parseReturnStatement() {
+    auto returnToken = previous();
+    
+    auto expressionNode = parseExpression();
+    if (!expressionNode) {
+        return nullptr;
+    }
+    
+    if (!match(TokenType::SEMICOLON)) {
+        std::cerr << "Expected ';' after return statement at line " 
+                  << peek().line << ", column " << peek().column << std::endl;
+        return nullptr;
+    }
+    
+    auto returnNode = std::make_shared<ASTNode>(ASTNodeType::RETURN_STATEMENT, returnToken);
+    returnNode->children.push_back(expressionNode);
+    return returnNode;
 }
 
 // Parse put statements
