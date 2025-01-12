@@ -3,7 +3,9 @@
 #include <algorithm>
 
 // Initialize parser with tokens
-Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), currentPosition(0) {}
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), currentPosition(0) {
+    symbolTable.enterScope(); // Enter global scope
+}
 
 // Parse entire program
 std::shared_ptr<ASTNode> Parser::parse() {
@@ -29,7 +31,7 @@ std::shared_ptr<ASTNode> Parser::parseProgram() {
         if (match(TokenType::DECLARE)) {
             auto node = parseDeclaration();
             if (node) programNode->children.push_back(node);
-        } else if (match(TokenType::PROCEDURE)) {  // Add this case
+        } else if (match(TokenType::PROCEDURE)) {  
             auto node = parseProcedure();
             if (node) programNode->children.push_back(node);
         } else if (match(TokenType::IDENTIFIER)) {
@@ -39,7 +41,6 @@ std::shared_ptr<ASTNode> Parser::parseProgram() {
                 auto node = parseProcedureCall();
                 if (node) programNode->children.push_back(node);
             } else if (peek().type == TokenType::ASSIGN) {
-                // This is an assignment
                 currentPosition--; // Back up so parseAssignment sees the identifier
                 auto node = parseAssignment();
                 if (node) programNode->children.push_back(node);
@@ -125,6 +126,15 @@ std::shared_ptr<ASTNode> Parser::parseAssignment() {
         return nullptr;
     }
 
+    // Check if variable is declared
+    if (!symbolTable.isVariableDeclared(identifierToken.lexeme)) {
+        std::cerr << "Undeclared variable: " << identifierToken.lexeme 
+                  << " at line " << identifierToken.line 
+                  << ", column " << identifierToken.column << std::endl;
+        advance(); // Advance to avoid infinite loop
+        return nullptr;
+    }
+
     // Create the assignment AST node
     auto assignmentNode = std::make_shared<ASTNode>(ASTNodeType::ASSIGNMENT, identifierToken);
     assignmentNode->children.push_back(std::make_shared<ASTNode>(ASTNodeType::IDENTIFIER, identifierToken));
@@ -175,6 +185,11 @@ std::shared_ptr<ASTNode> Parser::parsePrimary() {
     if (match(TokenType::NUMBER)) {
         return std::make_shared<ASTNode>(ASTNodeType::NUMBER, previous());
     } else if (match(TokenType::IDENTIFIER)) {
+        if (!symbolTable.isVariableDeclared(previous().lexeme)) {
+            std::cerr << "Undeclared variable: " << previous().lexeme 
+                      << " at line " << previous().line 
+                      << ", column " << previous().column << std::endl;
+        }
         return std::make_shared<ASTNode>(ASTNodeType::IDENTIFIER, previous());
     } else if (match(TokenType::STRING)) {
         return std::make_shared<ASTNode>(ASTNodeType::STRING, previous());
@@ -206,6 +221,9 @@ std::shared_ptr<ASTNode> Parser::parseIfStatement() {
                   << peek().line << ", column " << peek().column << std::endl;
         return nullptr;
     }
+
+    // Enter new scope for if block
+    symbolTable.enterScope();
 
     auto ifBlockNode = parseBlock();
     if (!ifBlockNode) {
@@ -256,6 +274,9 @@ std::shared_ptr<ASTNode> Parser::parseIfStatement() {
                   << ", column " << peek().column << std::endl;
         return nullptr;
     }
+
+    // Exit scope for if block
+    symbolTable.exitScope();
 
     // Require semicolon after end if
     if (!match(TokenType::SEMICOLON)) {
@@ -309,6 +330,9 @@ std::shared_ptr<ASTNode> Parser::parseWhileStatement() {
 // Parse blocks of code in braces
 std::shared_ptr<ASTNode> Parser::parseBlock() {
     auto blockNode = std::make_shared<ASTNode>(ASTNodeType::BLOCK, Token(TokenType::UNKNOWN, "", 0, 0));
+
+    // Enter new scope for block
+    symbolTable.enterScope();
 
     while (!isAtEnd() && !check(TokenType::END_IF) && !check(TokenType::END_LOOP) && 
            !check(TokenType::ELSE) && !check(TokenType::ELSEIF) && 
@@ -364,6 +388,9 @@ std::shared_ptr<ASTNode> Parser::parseBlock() {
             advance();
         }
     }
+
+    // Exit scope for block
+    symbolTable.exitScope();
 
     return blockNode;
 }

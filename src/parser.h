@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "lexer.h"
+#include "symbol_table.h"
 
 enum class ASTNodeType {
     PROGRAM,
@@ -43,6 +44,7 @@ public:
 private:
     std::vector<Token> tokens;
     size_t currentPosition;
+    SymbolTable symbolTable;
 
     // Parsing methods
     std::shared_ptr<ASTNode> parseProgram();
