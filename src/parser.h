@@ -19,7 +19,11 @@ enum class ASTNodeType {
     WHILE_STATEMENT,
     BLOCK,
     PUT_STATEMENT,
-    UNKNOWN,
+    PROCEDURE,
+    PROCEDURE_CALL,
+    PARAMETER,
+    RETURN_STATEMENT,
+    UNKNOWN
 };
 
 class ASTNode {
@@ -35,6 +39,7 @@ class Parser {
 public:
     Parser(const std::vector<Token>& tokens);
     std::shared_ptr<ASTNode> parse(); 
+
 private:
     std::vector<Token> tokens;
     size_t currentPosition;
@@ -49,6 +54,10 @@ private:
     std::shared_ptr<ASTNode> parseBlock();
     std::shared_ptr<ASTNode> parsePrimary();
     std::shared_ptr<ASTNode> parsePutStatement();
+    std::shared_ptr<ASTNode> parseProcedure();
+    std::shared_ptr<ASTNode> parseProcedureCall();
+    std::shared_ptr<ASTNode> parseProcedureCallStatement();
+    std::shared_ptr<ASTNode> parseReturnStatement();
 
     // Utility methods
     bool isAtEnd() const;
