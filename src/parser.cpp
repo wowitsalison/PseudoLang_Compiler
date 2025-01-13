@@ -356,11 +356,13 @@ std::shared_ptr<ASTNode> Parser::parseBlock() {
         } else if (match(TokenType::IDENTIFIER)) {
             Token identToken = previous();
             if (peek().type == TokenType::OPEN_PAREN) {
+                // This is a procedure call
                 currentPosition--; // Back up so parseProcedureCall sees the identifier
                 auto node = parseProcedureCallStatement();
                 if (node) blockNode->children.push_back(node);
                 else advance();
             } else if (peek().type == TokenType::ASSIGN) {
+                // This is an assignment
                 currentPosition--; // Back up so parseAssignment sees the identifier
                 auto node = parseAssignment();
                 if (node) blockNode->children.push_back(node);
@@ -509,6 +511,7 @@ std::shared_ptr<ASTNode> Parser::parseProcedureCall() {
         return nullptr;
     }
     
+    // Don't require semicolon here - let the calling context handle it
     return callNode;
 }
 
