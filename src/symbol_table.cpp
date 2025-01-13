@@ -1,11 +1,15 @@
 #include "symbol_table.h"
 
+SymbolTable::SymbolTable() {
+    enterScope();
+}
+
 void SymbolTable::enterScope() {
     scopes.push_back({});
 }
 
 void SymbolTable::exitScope() {
-    if (!scopes.empty()) {
+    if (scopes.size() > 1) { 
         scopes.pop_back();
     }
 }
@@ -27,8 +31,8 @@ VariableType SymbolTable::getVariableType(const std::string& name) const {
 }
 
 bool SymbolTable::isVariableDeclared(const std::string& name) const {
-    for (const auto& scope : scopes) {
-        if (scope.find(name) != scope.end()) {
+    for (auto it = scopes.rbegin(); it != scopes.rend(); ++it) {
+        if (it->find(name) != it->end()) {
             return true;
         }
     }
