@@ -12,6 +12,7 @@ enum class VariableType {
 
 class SymbolTable {
 public:
+    SymbolTable();
     void enterScope();
     void exitScope();
     void declareVariable(const std::string& name, VariableType type);
