@@ -1,6 +1,4 @@
 #pragma once
-#define PARSER_H
-
 #include <vector>
 #include <memory>
 #include "lexer.h"
@@ -10,58 +8,40 @@ enum class ASTNodeType {
     PROGRAM,
     DECLARATION,
     ASSIGNMENT,
-    BINARY_OP,
-    IDENTIFIER,
-    NUMBER,
-    STRING,
     IF_STATEMENT,
     ELSEIF_STATEMENT,
     ELSE_STATEMENT,
     WHILE_STATEMENT,
-    BLOCK,
     PUT_STATEMENT,
+    BLOCK,
+    BINARY_OP,
+    NUMBER,
+    STRING,
+    IDENTIFIER,
+    PARAMETER,
     PROCEDURE,
     PROCEDURE_CALL,
-    PARAMETER,
     RETURN_STATEMENT,
     UNKNOWN
 };
 
 class ASTNode {
 public:
-    ASTNodeType type;
-    std::vector<std::shared_ptr<ASTNode>> children;
-    Token token;
-
     ASTNode(ASTNodeType type, const Token& token) : type(type), token(token) {}
+    ASTNodeType type;
+    Token token;
+    std::vector<std::shared_ptr<ASTNode>> children;
 };
+
+class StatementParser;
+class ExpressionParser;
 
 class Parser {
 public:
     Parser(const std::vector<Token>& tokens);
-    std::shared_ptr<ASTNode> parse(); 
-
-private:
-    std::vector<Token> tokens;
-    size_t currentPosition;
-    SymbolTable symbolTable;
-
-    // Parsing methods
-    std::shared_ptr<ASTNode> parseProgram();
-    std::shared_ptr<ASTNode> parseDeclaration();
-    std::shared_ptr<ASTNode> parseAssignment();
-    std::shared_ptr<ASTNode> parseExpression();
-    std::shared_ptr<ASTNode> parseIfStatement();
-    std::shared_ptr<ASTNode> parseWhileStatement();
-    std::shared_ptr<ASTNode> parseBlock();
-    std::shared_ptr<ASTNode> parsePrimary();
-    std::shared_ptr<ASTNode> parsePutStatement();
-    std::shared_ptr<ASTNode> parseProcedure();
-    std::shared_ptr<ASTNode> parseProcedureCall();
-    std::shared_ptr<ASTNode> parseProcedureCallStatement();
-    std::shared_ptr<ASTNode> parseReturnStatement();
-
-    // Utility methods
+    std::shared_ptr<ASTNode> parse();
+    
+    // These need to be public for StatementParser and ExpressionParser
     bool isAtEnd() const;
     const Token& advance();
     const Token& peek() const;
@@ -69,4 +49,13 @@ private:
     bool match(TokenType type);
     bool check(TokenType type) const;
     bool isWhitespace(const Token& token) const;
+    SymbolTable& getSymbolTable() { return symbolTable; }
+
+    std::vector<Token> tokens;
+    size_t currentPosition;
+    SymbolTable symbolTable;
+    std::unique_ptr<StatementParser> statementParser;
+    std::unique_ptr<ExpressionParser> expressionParser;
+    
+    std::shared_ptr<ASTNode> parseProgram();
 };
