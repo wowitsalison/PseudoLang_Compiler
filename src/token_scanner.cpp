@@ -38,6 +38,10 @@ Token TokenScanner::scanToken() {
                 advance();
                 return Token(TokenType::LESS_EQUAL, "<=", line, column);
             }
+            else if (peek() == '-') {
+                advance();
+                return Token(TokenType::ASSIGN, "<-", line, column);
+            }
             return Token(TokenType::LESS, "<", line, column);
         case '>':
             if (peek() == '=') {
