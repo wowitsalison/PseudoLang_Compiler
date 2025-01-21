@@ -2,20 +2,23 @@
 #include "token_scanner.h"
 #include "keyword_manager.h"
 #include <cctype>
+#include <stdexcept>
 
-// Constructor
 Lexer::Lexer(const std::string& sourceCode) 
     : sourceCode(sourceCode), currentPosition(0), line(1), column(1) {
-        scanner = std::make_unique<TokenScanner>(sourceCode, currentPosition, line, column);
-        keywordManager = std::make_unique<KeywordManager>();
+    scanner = std::make_unique<TokenScanner>(sourceCode, currentPosition, line, column);
+    keywordManager = std::make_unique<KeywordManager>();
 }
 
-// Tokenize the PseudoLang source code
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
-
+    
     while (!isAtEnd()) {
         skipWhitespace();
+        
+        if (isAtEnd()) break;
+        
+        // Handle comments
         if (peek() == '/') {
             if (peekNext() == '/') {
                 skipComment();
@@ -25,15 +28,19 @@ std::vector<Token> Lexer::tokenize() {
                 continue;
             }
         }
+
+        // Save position before scanning token
+        size_t startPos = currentPosition;
+        int startLine = line;
+        int startCol = column;
+        
         Token token = scanner->scanToken();
 
         // Handle potential multi-word keywords
         if (token.type == TokenType::IDENTIFIER) {
             if (keywordManager->isMultiWordKeyword(token.lexeme)) {
-                size_t savedPos = currentPosition;
-                int savedLine = line;
-                int savedCol = column;
-
+                savePosition(startPos, startLine, startCol);
+                
                 skipWhitespace();
                 if (!isAtEnd() && isalpha(peek())) {
                     std::string secondWord;
@@ -47,10 +54,10 @@ std::vector<Token> Lexer::tokenize() {
                     if (multiWordType != TokenType::UNKNOWN) {
                         token = Token(multiWordType, combined, token.line, token.column);
                     } else {
-                        currentPosition = savedPos;
-                        line = savedLine;
-                        column = savedCol;
+                        restorePosition(startPos, startLine, startCol);
                     }
+                } else {
+                    restorePosition(startPos, startLine, startCol);
                 }
             }
 
@@ -70,46 +77,47 @@ std::vector<Token> Lexer::tokenize() {
     return tokens;
 }
 
-// Skip whitespace characters
 void Lexer::skipWhitespace() {
     while (!isAtEnd() && isspace(peek())) {
         advance();
     }
 }
 
-// Skip single-line comments
 void Lexer::skipComment() {
-    while (peek() != '\n' && !isAtEnd()) {
+    advance(); // Skip first '/'
+    advance(); // Skip second '/'
+    
+    while (!isAtEnd() && peek() != '\n') {
         advance();
     }
 }
 
-// Skip multi-line comments
 void Lexer::skipMultilineComment() {
-    advance(); // Consume '*'
+    advance(); // Skip '/'
+    advance(); // Skip '*'
+    
     while (!isAtEnd()) {
         if (peek() == '*' && peekNext() == '/') {
-            advance(); // Consume '*'
-            advance(); // Consume '/'
-            break;
+            advance(); // Skip '*'
+            advance(); // Skip '/'
+            return;
         }
         advance();
     }
+    
+    throw std::runtime_error("Unterminated multi-line comment");
 }
 
-// Peek at the current character
 char Lexer::peek() const {
     if (isAtEnd()) return '\0';
     return sourceCode[currentPosition];
 }
 
-// Peek at the next character
 char Lexer::peekNext() const {
     if (currentPosition + 1 >= sourceCode.size()) return '\0';
     return sourceCode[currentPosition + 1];
 }
 
-// Advance to the next character
 char Lexer::advance() {
     if (isAtEnd()) return '\0';
     char c = sourceCode[currentPosition++];
@@ -122,7 +130,18 @@ char Lexer::advance() {
     return c;
 }
 
-// Check if at the end of the source code
 bool Lexer::isAtEnd() const {
     return currentPosition >= sourceCode.size();
+}
+
+void Lexer::savePosition(size_t& pos, int& l, int& col) const {
+    pos = currentPosition;
+    l = line;
+    col = column;
+}
+
+void Lexer::restorePosition(size_t pos, int l, int col) {
+    currentPosition = pos;
+    line = l;
+    column = col;
 }
