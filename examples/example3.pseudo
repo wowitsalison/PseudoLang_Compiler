@@ -12,6 +12,6 @@ begin
     y <- x + y;
     z <- m + n + x + y;
     return z;
-end math;
+end procedure;
 
 z <- math(m, n, x, y);
