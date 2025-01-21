@@ -10,9 +10,9 @@ put(z);
 if (x = 5) then
     put("x is 5");
 elseif (x = 4) then
-    put("x is 4")
+    put("x is 4");
 else
-    put("x is something else")
+    put("x is something else");
 end if;
 
 // Test loops
@@ -20,4 +20,4 @@ declare i <- 0;
 while (i < 10) loop
     put(i);
     i <- i + 1;
-end loop
+end loop;
