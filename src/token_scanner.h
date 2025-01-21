@@ -1,5 +1,6 @@
 #pragma once
 #include "token.h"
+#include <string>
 
 class TokenScanner {
 public:
@@ -12,11 +13,13 @@ private:
     int& line;
     int& column;
     
-    Token handleIdentifierOrKeyword(char firstChar, int startColumn);
-    Token handleNumber(char firstChar, int startColumn);
-    Token handleString(int startColumn);
+    Token handleIdentifier();
+    Token handleNumber();
+    Token handleString();
+    Token handleOperator(char c);
     char peek() const;
     char peekNext() const;
     char advance();
     bool isAtEnd() const;
+    bool match(char expected);
 };
