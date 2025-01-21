@@ -38,3 +38,15 @@ bool SymbolTable::isVariableDeclared(const std::string& name) const {
     }
     return false;
 }
+
+std::set<std::string> SymbolTable::getAllVariables() const {
+    std::set<std::string> allVariables;
+    // Iterate through all scopes from innermost to outermost
+    for (auto scopeIt = scopes.rbegin(); scopeIt != scopes.rend(); ++scopeIt) {
+        // Add all variables from current scope
+        for (const auto& pair : *scopeIt) {
+            allVariables.insert(pair.first);
+        }
+    }
+    return allVariables;
+}
