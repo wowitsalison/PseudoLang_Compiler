@@ -6,7 +6,6 @@
 #include "token_scanner.h"
 #include "keyword_manager.h"
 
-
 class Lexer {
 public:
     Lexer(const std::string& sourceCode);
@@ -27,4 +26,6 @@ private:
     char peekNext() const;
     char advance();
     bool isAtEnd() const;
+    void savePosition(size_t& pos, int& l, int& col) const;
+    void restorePosition(size_t pos, int l, int col);
 };
