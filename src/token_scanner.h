@@ -17,6 +17,7 @@ private:
     Token handleNumber();
     Token handleString();
     Token handleOperator(char c);
+    
     char peek() const;
     char peekNext() const;
     char advance();
