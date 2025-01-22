@@ -4,12 +4,14 @@
 #include <cctype>
 #include <stdexcept>
 
+// Constructor for Lexer class
 Lexer::Lexer(const std::string& sourceCode) 
     : sourceCode(sourceCode), currentPosition(0), line(1), column(1) {
     scanner = std::make_unique<TokenScanner>(sourceCode, currentPosition, line, column);
     keywordManager = std::make_unique<KeywordManager>();
 }
 
+// Tokenize the source code
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     
@@ -77,12 +79,14 @@ std::vector<Token> Lexer::tokenize() {
     return tokens;
 }
 
+// Skip whitespace characters
 void Lexer::skipWhitespace() {
     while (!isAtEnd() && isspace(peek())) {
         advance();
     }
 }
 
+// Skip single-line comments
 void Lexer::skipComment() {
     advance(); // Skip first '/'
     advance(); // Skip second '/'
@@ -92,6 +96,7 @@ void Lexer::skipComment() {
     }
 }
 
+// Skip multi-line comments
 void Lexer::skipMultilineComment() {
     advance(); // Skip '/'
     advance(); // Skip '*'
@@ -108,16 +113,19 @@ void Lexer::skipMultilineComment() {
     throw std::runtime_error("Unterminated multi-line comment");
 }
 
+// Return the current character
 char Lexer::peek() const {
     if (isAtEnd()) return '\0';
     return sourceCode[currentPosition];
 }
 
+// Return the next character
 char Lexer::peekNext() const {
     if (currentPosition + 1 >= sourceCode.size()) return '\0';
     return sourceCode[currentPosition + 1];
 }
 
+// Advance to the next character
 char Lexer::advance() {
     if (isAtEnd()) return '\0';
     char c = sourceCode[currentPosition++];
@@ -130,16 +138,19 @@ char Lexer::advance() {
     return c;
 }
 
+// Check for end of source code
 bool Lexer::isAtEnd() const {
     return currentPosition >= sourceCode.size();
 }
 
+// Save current position
 void Lexer::savePosition(size_t& pos, int& l, int& col) const {
     pos = currentPosition;
     l = line;
     col = column;
 }
 
+// Restore position
 void Lexer::restorePosition(size_t pos, int l, int col) {
     currentPosition = pos;
     line = l;
