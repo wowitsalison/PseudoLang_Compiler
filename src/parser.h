@@ -40,8 +40,7 @@ class Parser {
 public:
     Parser(const std::vector<Token>& tokens);
     std::shared_ptr<ASTNode> parse();
-    
-    // These need to be public for StatementParser and ExpressionParser
+
     bool isAtEnd() const;
     const Token& advance();
     const Token& peek() const;
