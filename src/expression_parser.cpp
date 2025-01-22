@@ -2,6 +2,7 @@
 #include <iostream>
 #include "statement_parser.h"
 
+// Parse an expression
 std::shared_ptr<ASTNode> ExpressionParser::parseExpression() {
     if (parser.match(TokenType::OPEN_PAREN)) {
         auto expr = parseExpression();
@@ -19,6 +20,7 @@ std::shared_ptr<ASTNode> ExpressionParser::parseExpression() {
         return parser.statementParser->parseProcedureCall();
     }
     
+    // Check for assignment
     auto left = parsePrimary();
     while (parser.match(TokenType::PLUS) || parser.match(TokenType::MINUS) || 
            parser.match(TokenType::STAR) || parser.match(TokenType::SLASH) || 
@@ -40,6 +42,7 @@ std::shared_ptr<ASTNode> ExpressionParser::parseExpression() {
     return left;
 }
 
+// Parse a primary expression
 std::shared_ptr<ASTNode> ExpressionParser::parsePrimary() {
     if (parser.match(TokenType::NUMBER)) {
         return std::make_shared<ASTNode>(ASTNodeType::NUMBER, parser.previous());
@@ -61,6 +64,7 @@ std::shared_ptr<ASTNode> ExpressionParser::parsePrimary() {
         return expr;
     }
 
+    // Warn about unexpected token
     std::cerr << "Unexpected token in expression: " << parser.peek().lexeme 
               << " at line " << parser.peek().line 
               << ", column " << parser.peek().column << std::endl;
