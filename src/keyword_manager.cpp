@@ -1,9 +1,11 @@
 #include "keyword_manager.h"
 
+// Initialize keyword maps
 KeywordManager::KeywordManager() {
     initializeKeywordMaps();
 }
 
+// Initialize keyword maps
 void KeywordManager::initializeKeywordMaps() {
     keywordMap = {
         {"if", TokenType::IF},
@@ -27,6 +29,7 @@ void KeywordManager::initializeKeywordMaps() {
     };
 }
 
+// Get keyword type
 TokenType KeywordManager::getKeywordType(const std::string& word) const {
     auto it = keywordMap.find(word);
     if (it != keywordMap.end()) {
@@ -35,6 +38,7 @@ TokenType KeywordManager::getKeywordType(const std::string& word) const {
     return TokenType::UNKNOWN;
 }
 
+// Get multi-word keyword type
 TokenType KeywordManager::getMultiWordKeywordType(const std::string& phrase) const {
     auto it = multiWordKeywordMap.find(phrase);
     if (it != multiWordKeywordMap.end()) {
@@ -43,6 +47,7 @@ TokenType KeywordManager::getMultiWordKeywordType(const std::string& phrase) con
     return TokenType::UNKNOWN;
 }
 
+// Check if a keyword is a multi-word keyword
 bool KeywordManager::isMultiWordKeyword(const std::string& firstWord) const {
     for (const auto& pair : multiWordKeywordMap) {
         if (pair.first.find(firstWord) == 0) {
