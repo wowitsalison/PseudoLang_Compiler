@@ -2,9 +2,11 @@
 #include <cctype>
 #include <stdexcept>
 
+// Constructor for TokenScanner
 TokenScanner::TokenScanner(const std::string& sourceCode, size_t& pos, int& line, int& col)
     : sourceCode(sourceCode), currentPosition(pos), line(line), column(col) {}
 
+// Scans the next token in the source code
 Token TokenScanner::scanToken() {
     char c = advance();
     
@@ -38,6 +40,7 @@ Token TokenScanner::scanToken() {
     return handleOperator(c);
 }
 
+// Helper functions for scanning identifier tokens 
 Token TokenScanner::handleIdentifier() {
     int startCol = column;
     int startLine = line;
@@ -50,6 +53,7 @@ Token TokenScanner::handleIdentifier() {
     return Token(TokenType::IDENTIFIER, identifier, startLine, startCol);
 }
 
+// Helper functions for scanning number tokens
 Token TokenScanner::handleNumber() {
     int startCol = column;
     int startLine = line;
@@ -62,6 +66,7 @@ Token TokenScanner::handleNumber() {
     return Token(TokenType::NUMBER, number, startLine, startCol);
 }
 
+// Helper functions for scanning string tokens
 Token TokenScanner::handleString() {
     int startCol = column;
     int startLine = line;
@@ -83,6 +88,7 @@ Token TokenScanner::handleString() {
     return Token(TokenType::STRING, str, startLine, startCol);
 }
 
+// Helper functions for scanning operator tokens
 Token TokenScanner::handleOperator(char c) {
     int startCol = column - 1;  // Adjust for the advance() call
     int startLine = line;
@@ -114,6 +120,7 @@ Token TokenScanner::handleOperator(char c) {
     return Token(TokenType::UNKNOWN, std::string(1, c), startLine, startCol);
 }
 
+// Helper functions for scanning characters
 char TokenScanner::peek() const {
     if (isAtEnd()) return '\0';
     return sourceCode[currentPosition];
@@ -142,6 +149,7 @@ bool TokenScanner::match(char expected) {
     return true;
 }
 
+// Check for end of source code
 bool TokenScanner::isAtEnd() const {
     return currentPosition >= sourceCode.size();
 }
