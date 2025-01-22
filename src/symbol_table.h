@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <set>
+
 enum class VariableType {
     INTEGER,
     STRING,
