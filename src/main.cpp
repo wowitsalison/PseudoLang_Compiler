@@ -24,17 +24,22 @@ int main(int argc, char* argv[]) {
     std::string sourceCode((std::istreambuf_iterator<char>(sourceFile)), 
                             std::istreambuf_iterator<char>());
 
-    // Perform lexical analysis (tokenize)
+    // Create lexer and tokenize input
     Lexer lexer(sourceCode);
     auto tokens = lexer.tokenize();
 
-    // Parse the tokens
+    // Create parser and parse tokens into AST
     Parser parser(tokens);
     auto ast = parser.parse();
 
-    // Generate C++ code
-    CodeGenerator codegen(ast);
-    std::string cppCode = codegen.generate();
+    if (!ast) {
+        std::cerr << "Parsing failed!" << std::endl;
+        return 1;
+    }
+
+    // Generate code from AST
+    CodeGenerator generator;
+    std::string cppCode = generator.generateCode(ast);
 
     // Write the C++ code to a file
     std::string outputCppFile = "output.cpp";
@@ -53,6 +58,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << "Compilation successful! Run the program with '/.output'\n";
+    std::cout << "Compilation successful! Run the program with './output'\n";
     return 0;
 }
