@@ -4,10 +4,12 @@
 #include "expression_parser.h"
 #include <sstream>
 
+// Get the current indentation level
 std::string CodeGenerator::getIndent() const {
     return std::string(indentLevel * 4, ' ');
 }
 
+// Main code generation method
 std::string CodeGenerator::generateCode(const std::shared_ptr<ASTNode>& node) {
     if (!node) return "";
     
@@ -45,6 +47,7 @@ std::string CodeGenerator::generateCode(const std::shared_ptr<ASTNode>& node) {
     }
 }
 
+// Helper methods for specific node types in whole program
 std::string CodeGenerator::generateProgramCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     code << "#include <iostream>\n\n";
@@ -80,6 +83,7 @@ std::string CodeGenerator::generateProgramCode(const std::shared_ptr<ASTNode>& n
     return code.str();
 }
 
+// Helper methods for specific node types in declarations 
 std::string CodeGenerator::generateDeclarationCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 1) {
@@ -96,6 +100,7 @@ std::string CodeGenerator::generateDeclarationCode(const std::shared_ptr<ASTNode
     return code.str();
 }
 
+// Helper methods for specific node types in assignments
 std::string CodeGenerator::generateAssignmentCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
@@ -105,6 +110,7 @@ std::string CodeGenerator::generateAssignmentCode(const std::shared_ptr<ASTNode>
     return code.str();
 }
 
+// Helper methods for specific node types in if statements
 std::string CodeGenerator::generateIfStatementCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
@@ -140,6 +146,7 @@ std::string CodeGenerator::generateIfStatementCode(const std::shared_ptr<ASTNode
     return code.str();
 }
 
+// Helper methods for specific node types in while statements
 std::string CodeGenerator::generateWhileStatementCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
@@ -152,6 +159,7 @@ std::string CodeGenerator::generateWhileStatementCode(const std::shared_ptr<ASTN
     return code.str();
 }
 
+// Helper methods for specific node types in put statements
 std::string CodeGenerator::generatePutStatementCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (!node->children.empty()) {
@@ -160,6 +168,7 @@ std::string CodeGenerator::generatePutStatementCode(const std::shared_ptr<ASTNod
     return code.str();
 }
 
+// Helper methods for specific node types in binary operations
 std::string CodeGenerator::generateBinaryOpCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
@@ -184,6 +193,7 @@ std::string CodeGenerator::generateBinaryOpCode(const std::shared_ptr<ASTNode>& 
     return code.str();
 }
 
+// Helper methods for specific node types in procedures
 std::string CodeGenerator::generateProcedureCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
@@ -207,6 +217,7 @@ std::string CodeGenerator::generateProcedureCode(const std::shared_ptr<ASTNode>&
     return code.str();
 }
 
+// Helper methods for specific node types in procedure calls
 std::string CodeGenerator::generateProcedureCallCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (!node->children.empty()) {
@@ -220,6 +231,7 @@ std::string CodeGenerator::generateProcedureCallCode(const std::shared_ptr<ASTNo
     return code.str();
 }
 
+// Helper methods for specific node types in blocks
 std::string CodeGenerator::generateBlockCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     for (const auto& child : node->children) {
@@ -228,6 +240,7 @@ std::string CodeGenerator::generateBlockCode(const std::shared_ptr<ASTNode>& nod
     return code.str();
 }
 
+// Helper methods for specific node types in return statements
 std::string CodeGenerator::generateReturnStatementCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (!node->children.empty()) {
