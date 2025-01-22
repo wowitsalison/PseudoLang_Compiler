@@ -48,11 +48,33 @@ std::string CodeGenerator::generateCode(const std::shared_ptr<ASTNode>& node) {
 std::string CodeGenerator::generateProgramCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     code << "#include <iostream>\n\n";
+    
+    // Forward declarations and global variables
+    for (const auto& child : node->children) {
+        if (child->type == ASTNodeType::DECLARATION) {
+            code << "int " << child->children[0]->token.lexeme << ";\n";
+        }
+    }
+    code << "\n";
+    
+    // Function declarations
+    for (const auto& child : node->children) {
+        if (child->type == ASTNodeType::PROCEDURE) {
+            code << generateProcedureCode(child);
+        }
+    }
+    
     code << "int main() {\n";
     indentLevel++;
+    
+    // Main program statements (excluding declarations and procedures)
     for (const auto& child : node->children) {
-        code << getIndent() << generateCode(child);
+        if (child->type != ASTNodeType::DECLARATION && 
+            child->type != ASTNodeType::PROCEDURE) {
+            code << getIndent() << generateCode(child);
+        }
     }
+    
     indentLevel--;
     code << "    return 0;\n}\n";
     return code.str();
@@ -165,7 +187,8 @@ std::string CodeGenerator::generateBinaryOpCode(const std::shared_ptr<ASTNode>& 
 std::string CodeGenerator::generateProcedureCode(const std::shared_ptr<ASTNode>& node) {
     std::stringstream code;
     if (node->children.size() >= 2) {
-        code << "\nvoid " << node->children[0]->token.lexeme << "(";
+        std::string procName = node->children[0]->token.lexeme;
+        code << "int " << procName << "(";
         
         // Parameters
         for (size_t i = 1; i < node->children.size() - 1; i++) {
@@ -179,7 +202,7 @@ std::string CodeGenerator::generateProcedureCode(const std::shared_ptr<ASTNode>&
         indentLevel++;
         code << getIndent() << generateCode(node->children.back());
         indentLevel--;
-        code << "}\n";
+        code << "}\n\n";
     }
     return code.str();
 }
@@ -192,7 +215,7 @@ std::string CodeGenerator::generateProcedureCallCode(const std::shared_ptr<ASTNo
             if (i > 0) code << ", ";
             code << generateCode(node->children[i]);
         }
-        code << ");\n";
+        code << ")";
     }
     return code.str();
 }
