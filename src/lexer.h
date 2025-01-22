@@ -12,10 +12,11 @@ public:
     std::vector<Token> tokenize();
 
 private:
-    std::string sourceCode;
-    size_t currentPosition;
     int line;
     int column;
+
+    size_t currentPosition;
+    std::string sourceCode;
     std::unique_ptr<TokenScanner> scanner;
     std::unique_ptr<KeywordManager> keywordManager;
 
