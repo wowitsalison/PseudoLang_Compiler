@@ -19,7 +19,7 @@ public:
     void declareVariable(const std::string& name, VariableType type);
     VariableType getVariableType(const std::string& name) const;
     bool isVariableDeclared(const std::string& name) const;
-    std::set<std::string> getAllVariables() const;  // New method
+    std::set<std::string> getAllVariables() const;
 
 private:
     std::vector<std::unordered_map<std::string, VariableType>> scopes;
