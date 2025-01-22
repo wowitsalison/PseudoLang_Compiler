@@ -1,5 +1,4 @@
 # PseudoLang Compiler
-### NOT COMPLETE - IN PROGRESS
 This project is a pre-course exploration of compiler design, created to benchmark my current understanding of compilers against the skills I'll aquire by the end of my upcoming compiler design course. By building this project now, I aim to identify areas for growth and demonstrate progress over the semester.
 
 ## Overview
@@ -51,34 +50,38 @@ g++ output.cpp -o output
 ```plaintext
 📂 my-first-compiler  
 ├── 📂 src  
-│   ├── lexer.cpp           # Tokenizer implementation
-│   ├── lexer.h             # Tokenizer header
-│   ├── parser.cpp          # Syntax parser
-│   ├── parser.h            # Syntax parser header
-│   ├── codegen.cpp         # C++ code generation
-│   ├── codegen.h           # C++ code generation header
-│   ├── token.h             # Token definitions
-│   ├── token_scanner.cpp   # Token scanner implementation
-│   ├── token_scanner.h     # Token scanner header
-│   ├── keyword_manager.cpp # Keyword manager implementation
-│   ├── keyword_manager.h   # Keyword manager header
-│   ├── symbol_table.cpp    # Symbol table
-│   ├── symbol_table.h      # Symbol table header
-│   └── main.cpp            # Entry point of the compiler
+│   ├── lexer.cpp             # Tokenizer implementation
+│   ├── lexer.h               # Tokenizer header
+│   ├── parser.cpp            # Syntax parser
+│   ├── parser.h              # Syntax parser header
+│   ├── codegen.cpp           # C++ code generation
+│   ├── codegen.h             # C++ code generation header
+│   ├── token.h               # Token definitions
+│   ├── token_scanner.cpp     # Token scanner implementation
+│   ├── token_scanner.h       # Token scanner header
+│   ├── keyword_manager.cpp   # Keyword manager implementation
+│   ├── keyword_manager.h     # Keyword manager header
+│   ├── symbol_table.cpp      # Symbol table
+│   ├── symbol_table.h        # Symbol table header
+│   ├── expression_parser.cpp # Syntax parser for expressions
+│   ├── expression_parser.h   # Syntax parser for expressions header
+│   ├── statement_parser.cpp  # Syntax parser for statements
+│   ├── statement_parser.h    # Syntax parser for statements header
+│   └── main.cpp              # Entry point of the compiler
 ├── 📂 examples  
-│   ├── example1.pseudo     # Sample PseudoLang file
+│   ├── example1.pseudo       # Sample PseudoLang file
 │   ├── example2.pseudo
 │   └── example3.pseudo
 ├── 📂 docs
-│   ├── syntax.md           # Syntax for PseudoLang language
-│   └── AST.md              # Abstract Syntax Tree
-├── README.md               # Project overview    
+│   ├── syntax.md             # Syntax for PseudoLang language
+│   └── AST.md                # Abstract Syntax Tree
+├── README.md                 # Project overview    
 ```
 
 ## Getting started
 ### Prerequisites
 - **C++ compiler**: GCC, Clang, or MSVC.
-- **Build Tools**: Make (optional)
+- **Build Tools**: Make (optional - I didn't use one)
 
 ### Build and Run
 1. Clone the repository:
