@@ -2,6 +2,7 @@
 #include "expression_parser.h"
 #include <iostream>
 
+// Constructor for StatementParser
 std::shared_ptr<ASTNode> StatementParser::parseDeclaration() {
     // Store declare token
     auto declareToken = parser.previous();
@@ -27,13 +28,13 @@ std::shared_ptr<ASTNode> StatementParser::parseDeclaration() {
     // Create the declaration AST node
     auto declarationNode = std::make_shared<ASTNode>(ASTNodeType::DECLARATION, declareToken);
     declarationNode->children.push_back(std::make_shared<ASTNode>(ASTNodeType::IDENTIFIER, identifierToken));
-    if (valueNode) {
+    if (valueNode) { // Add value node if it exists
         declarationNode->children.push_back(valueNode);
     }
 
     return declarationNode;
 }
-
+ // Parse an assignment statement
 std::shared_ptr<ASTNode> StatementParser::parseAssignment() {
     // Store identifier token
     auto identifierToken = parser.advance();
@@ -75,14 +76,17 @@ std::shared_ptr<ASTNode> StatementParser::parseAssignment() {
     return assignmentNode;
 }
 
+// Parse an if statement
 std::shared_ptr<ASTNode> StatementParser::parseIfStatement() {
     auto ifToken = parser.previous();
     
+    // Parse condition
     auto conditionNode = parser.expressionParser->parseExpression();
     if (!conditionNode) {
         return nullptr;
     }
 
+    // Check for 'then' keyword
     if (!parser.match(TokenType::THEN)) {
         std::cerr << "Expected 'then' after if condition at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
@@ -92,15 +96,18 @@ std::shared_ptr<ASTNode> StatementParser::parseIfStatement() {
     // Enter new scope for if block
     parser.getSymbolTable().enterScope();
 
+    // Parse if block
     auto ifBlockNode = parseBlock();
     if (!ifBlockNode) {
         return nullptr;
     }
 
+    // Create if node
     auto ifNode = std::make_shared<ASTNode>(ASTNodeType::IF_STATEMENT, ifToken);
     ifNode->children.push_back(conditionNode);
     ifNode->children.push_back(ifBlockNode);
 
+    // Parse elseif and else blocks
     while (parser.peek().type == TokenType::ELSEIF) {
         parser.advance(); // Consume ELSEIF
         auto elseifCondition = parser.expressionParser->parseExpression();
@@ -108,23 +115,27 @@ std::shared_ptr<ASTNode> StatementParser::parseIfStatement() {
             return nullptr;
         }
 
+    // Check for 'then' keyword after elseif condition
         if (!parser.match(TokenType::THEN)) {
             std::cerr << "Expected 'then' after elseif condition at line " 
                       << parser.peek().line << ", column " << parser.peek().column << std::endl;
             return nullptr;
         }
 
+        // Parse elseif block
         auto elseifBlock = parseBlock();
         if (!elseifBlock) {
             return nullptr;
         }
 
+        // Create elseif node
         auto elseifNode = std::make_shared<ASTNode>(ASTNodeType::ELSEIF_STATEMENT, parser.previous());
         elseifNode->children.push_back(elseifCondition);
         elseifNode->children.push_back(elseifBlock);
         ifNode->children.push_back(elseifNode);
     }
 
+    // Parse else block if it exists
     if (parser.peek().type == TokenType::ELSE) {
         parser.advance(); // Consume ELSE
         auto elseBlock = parseBlock();
@@ -136,6 +147,7 @@ std::shared_ptr<ASTNode> StatementParser::parseIfStatement() {
         ifNode->children.push_back(elseNode);
     }
 
+    // Check for 'end if' 
     if (!parser.match(TokenType::END_IF)) {
         std::cerr << "Expected 'end if' at line " << parser.peek().line 
                   << ", column " << parser.peek().column << std::endl;
@@ -155,25 +167,30 @@ std::shared_ptr<ASTNode> StatementParser::parseIfStatement() {
     return ifNode;
 }
 
+// Parse a while statement
 std::shared_ptr<ASTNode> StatementParser::parseWhileStatement() {
     auto whileToken = parser.previous();
     
+    // Parse condition expression 
     auto conditionNode = parser.expressionParser->parseExpression();
     if (!conditionNode) {
         return nullptr;
     }
 
+    // Check for loop keyword after condition
     if (!parser.match(TokenType::LOOP)) {
         std::cerr << "Expected 'loop' after while condition at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
         return nullptr;
     }
 
+    // Enter new scope for while block
     auto blockNode = parseBlock();
     if (!blockNode) {
         return nullptr;
     }
 
+    // Check for end loop keyword after block
     if (!parser.match(TokenType::END_LOOP)) {
         std::cerr << "Expected 'end loop' at line " << parser.peek().line 
                   << ", column " << parser.peek().column << std::endl;
@@ -187,12 +204,14 @@ std::shared_ptr<ASTNode> StatementParser::parseWhileStatement() {
         return nullptr;
     }
 
+    // Exit scope for while block
     auto whileNode = std::make_shared<ASTNode>(ASTNodeType::WHILE_STATEMENT, whileToken);
     whileNode->children.push_back(conditionNode);
     whileNode->children.push_back(blockNode);
     return whileNode;
 }
 
+// Parse a put statement
 std::shared_ptr<ASTNode> StatementParser::parsePutStatement() {
     auto putToken = parser.previous();
     
@@ -203,6 +222,7 @@ std::shared_ptr<ASTNode> StatementParser::parsePutStatement() {
         return nullptr;
     }
     
+    // Parse expression
     auto expressionNode = parser.expressionParser->parseExpression();
     if (!expressionNode) {
         return nullptr;
@@ -222,11 +242,13 @@ std::shared_ptr<ASTNode> StatementParser::parsePutStatement() {
         return nullptr;
     }
 
+    // Create put node
     auto putNode = std::make_shared<ASTNode>(ASTNodeType::PUT_STATEMENT, putToken);
     putNode->children.push_back(expressionNode);
     return putNode;
 }
 
+// Parse a procedure definition
 std::shared_ptr<ASTNode> StatementParser::parseProcedure() {
     auto procToken = parser.previous();
     
@@ -264,6 +286,7 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedure() {
         }
     }
     
+    // Handle closing parenthesis
     if (!parser.match(TokenType::CLOSE_PAREN)) {
         std::cerr << "Expected ')' after parameters at line " << parser.peek().line 
                   << ", column " << parser.peek().column << std::endl;
@@ -279,18 +302,21 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedure() {
     
     auto bodyNode = parseBlock();
     
+    // Handle end procedure
     if (!parser.match(TokenType::END_PROCEDURE)) {
         std::cerr << "Expected 'end procedure' at line " << parser.peek().line 
                   << ", column " << parser.peek().column << std::endl;
         return nullptr;
     }
     
+    // Require semicolon after end procedure
     if (!parser.match(TokenType::SEMICOLON)) {
         std::cerr << "Expected ';' after 'end procedure' at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
         return nullptr;
     }
     
+    // Create procedure node
     auto procNode = std::make_shared<ASTNode>(ASTNodeType::PROCEDURE, procToken);
     procNode->children.push_back(nameNode);
     for (auto& param : params) {
@@ -301,6 +327,7 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedure() {
     return procNode;
 }
 
+// Parse a procedure call
 std::shared_ptr<ASTNode> StatementParser::parseProcedureCall() {
     if (!parser.match(TokenType::IDENTIFIER)) {
         std::cerr << "Expected procedure name at line " 
@@ -308,9 +335,11 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedureCall() {
         return nullptr;
     }
     
+    // Create procedure call node
     auto procName = parser.previous();
     auto callNode = std::make_shared<ASTNode>(ASTNodeType::PROCEDURE_CALL, procName);
     
+    // Check for opening parenthesis
     if (!parser.match(TokenType::OPEN_PAREN)) {
         std::cerr << "Expected '(' after procedure name at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
@@ -334,6 +363,7 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedureCall() {
         }
     }
     
+    // Handle closing parenthesis
     if (!parser.match(TokenType::CLOSE_PAREN)) {
         std::cerr << "Expected ')' after arguments at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
@@ -343,12 +373,14 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedureCall() {
     return callNode;
 }
 
+// Parse a procedure call statement
 std::shared_ptr<ASTNode> StatementParser::parseProcedureCallStatement() {
     auto callNode = parseProcedureCall();
     if (!callNode) {
         return nullptr;
     }
     
+    // Handle semicolon after procedure call
     if (!parser.match(TokenType::SEMICOLON)) {
         std::cerr << "Expected ';' after procedure call at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
@@ -358,25 +390,30 @@ std::shared_ptr<ASTNode> StatementParser::parseProcedureCallStatement() {
     return callNode;
 }
 
+// Parse a return statement
 std::shared_ptr<ASTNode> StatementParser::parseReturnStatement() {
     auto returnToken = parser.previous();
     
+    // Parse expression
     auto expressionNode = parser.expressionParser->parseExpression();
     if (!expressionNode) {
         return nullptr;
     }
     
+    // Handle semicolon after return expression
     if (!parser.match(TokenType::SEMICOLON)) {
         std::cerr << "Expected ';' after return statement at line " 
                   << parser.peek().line << ", column " << parser.peek().column << std::endl;
         return nullptr;
     }
     
+    // Create return node
     auto returnNode = std::make_shared<ASTNode>(ASTNodeType::RETURN_STATEMENT, returnToken);
     returnNode->children.push_back(expressionNode);
     return returnNode;
 }
 
+// Parse a block of statements
 std::shared_ptr<ASTNode> StatementParser::parseBlock() {
     auto blockNode = std::make_shared<ASTNode>(ASTNodeType::BLOCK, Token(TokenType::UNKNOWN, "", 0, 0));
 
@@ -392,10 +429,12 @@ std::shared_ptr<ASTNode> StatementParser::parseBlock() {
             parser.advance();
         }
         
+        // Break if at end of block
         if (parser.isAtEnd() || parser.check(TokenType::END_IF) || parser.check(TokenType::END_LOOP) || 
             parser.check(TokenType::ELSE) || parser.check(TokenType::ELSEIF) || 
             parser.check(TokenType::END_PROCEDURE)) break;  
         
+        // Parse statement based on first token in block
         if (parser.match(TokenType::RETURN)) { 
             auto returnNode = parseReturnStatement();
             if (returnNode) blockNode->children.push_back(returnNode);
